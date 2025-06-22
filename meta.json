@@ -1,0 +1,14 @@
+{
+  "$schema": "https://dl.viam.dev/module.schema.json",
+  "module_id": "pret:inventorymonitor",
+  "visibility": "public",
+  "url": "https://github.com/pret/inventory-monitor",
+  "description": "Real-time inventory monitoring for Pret A Manger locations with smart alerting and mobile-first PWA interface",
+  "applications": [
+    {
+      "name": "inventorymonitor",
+      "type": "single_machine", 
+      "entrypoint": "module/apps/inventorymonitor/dist/index.html"
+    }
+  ]
+}

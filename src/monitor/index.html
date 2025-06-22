@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pret Inventory Monitor</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Real-time inventory monitoring for Pret A Manger locations">
+  <meta name="theme-color" content="#e11d2f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pret Monitor">
+  
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="./style.css">
+  
+  <!-- Leaflet CSS for maps -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="./style.css" as="style">
+  <link rel="preload" href="./icon-192.png" as="image">
+  
+  <!-- DNS prefetch for external resources -->
+  <link rel="dns-prefetch" href="//app.viam.com">
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+</head>
+<body>
+  <!-- App Container -->
+  <div id="app">
+    <!-- Loading State -->
+    <div class="loading-screen">
+      <div class="loading-container">
+        <div class="loading-logo">🥪</div>
+        <h1 class="loading-title">Pret Monitor</h1>
+        <p class="loading-subtitle">Connecting to stores...</p>
+        <div class="loading-spinner">
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offline Indicator -->
+  <div id="offline-indicator" class="offline-indicator" style="display: none;">
+    <span class="offline-icon">📶</span>
+    <span class="offline-text">You're offline</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script type="module" src="./src/main.ts"></script>
+  
+  <!-- Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('SW registered: ', registration);
+          })
+          .catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
+
+  <style>
+    /* Loading Screen Styles */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #e11d2f 0%, #b71c2c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+    }
+    
+    .loading-container {
+      text-align: center;
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .loading-logo {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounce 2s infinite;
+    }
+    
+    .loading-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+    
+    .loading-subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+    
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .spinner-dot {
+      width: 12px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: spinnerPulse 1.5s ease-in-out infinite;
+    }
+    
+    .spinner-dot:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+    
+    .spinner-dot:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+    
+    /* Offline Indicator */
+    .offline-indicator {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #374151;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes spinnerPulse {
+      0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</body>
+</html>

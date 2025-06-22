@@ -1,0 +1,3271 @@
+<combined_files>
+<file path="meta.json">
+<filename>meta.json</filename>
+<content>
+
+</content>
+</file>
+<file path="Makefile">
+<filename>Makefile</filename>
+<content>
+.PHONY: create update upload build dev install clean deploy test lint format
+VERSION := 1.0.0
+MODULE_NAME := inventorymonitor
+ORG_NAMESPACE := pret
+
+# Colors for output
+RED := \033[0;31m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+BLUE := \033[0;34m
+NC := \033[0m # No Color
+
+# Development Commands
+install:
+	@echo "$(BLUE)📦 Installing dependencies...$(NC)"
+	cd src/monitor && npm install
+	@echo "$(GREEN)✅ Dependencies installed$(NC)"
+
+dev:
+	@echo "$(BLUE)🚀 Starting development server...$(NC)"
+	@echo "$(YELLOW)📱 Mobile-first design - test on mobile devices!$(NC)"
+	cd src/monitor && npm run dev
+
+dev-mobile:
+	@echo "$(BLUE)📱 Starting development server with mobile debugging...$(NC)"
+	cd src/monitor && npm run dev -- --host 0.0.0.0
+
+# Code Quality
+lint:
+	@echo "$(BLUE)🔍 Running linter...$(NC)"
+	cd src/monitor && npm run lint
+
+format:
+	@echo "$(BLUE)✨ Formatting code...$(NC)"
+	cd src/monitor && npm run format
+
+type-check:
+	@echo "$(BLUE)🔷 Type checking...$(NC)"
+	cd src/monitor && npm run type-check
+
+test:
+	@echo "$(BLUE)🧪 Running tests...$(NC)"
+	cd src/monitor && npm run test
+
+# Production Commands
+build:
+	@echo "$(BLUE)🔨 Building production bundle...$(NC)"
+	cd src/monitor && npm run build
+	@echo "$(GREEN)✅ Build complete: module/apps/inventorymonitor/dist/$(NC)"
+
+preview:
+	@echo "$(BLUE)👀 Previewing production build...$(NC)"
+	cd src/monitor && npm run preview
+
+upload: build
+	@echo "$(BLUE)🌐 Deploying to Viam Apps...$(NC)"
+	viam module upload --version=${VERSION} --platform=any --public-namespace=${ORG_NAMESPACE} --force module
+	@echo "$(GREEN)🎉 Deployed: https://inventorymonitor_pret.viamapplications.com$(NC)"
+
+# Utility Commands
+clean:
+	@echo "$(YELLOW)🧹 Cleaning build artifacts...$(NC)"
+	rm -rf src/monitor/node_modules
+	rm -rf src/monitor/dist
+	rm -rf module/apps/inventorymonitor/dist
+	@echo "$(GREEN)✅ Clean complete$(NC)"
+
+fresh: clean install
+	@echo "$(GREEN)🆕 Fresh installation complete$(NC)"
+
+# Viam Commands
+create:
+	viam module create --name=${MODULE_NAME} --public-namespace=${ORG_NAMESPACE}
+
+update:
+	viam module update --module=meta.json
+
+# Full Deployment Pipeline
+deploy: clean install type-check build upload
+	@echo "$(GREEN)🎉 Full deployment complete!$(NC)"
+	@echo "$(BLUE)📱 App URL: https://inventorymonitor_pret.viamapplications.com$(NC)"
+
+# Development Shortcuts
+d: dev
+b: build  
+u: upload
+c: clean
+i: install
+
+# Help
+help:
+	@echo "$(BLUE)Pret Inventory Monitor - Build Commands$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Development:$(NC)"
+	@echo "  make dev          Start development server"
+	@echo "  make dev-mobile   Start with mobile debugging"
+	@echo "  make install      Install dependencies"
+	@echo ""
+	@echo "$(YELLOW)Code Quality:$(NC)"
+	@echo "  make lint         Run linter"
+	@echo "  make format       Format code"
+	@echo "  make type-check   TypeScript type checking"
+	@echo "  make test         Run tests"
+	@echo ""
+	@echo "$(YELLOW)Production:$(NC)"
+	@echo "  make build        Build for production"
+	@echo "  make preview      Preview production build"
+	@echo "  make upload       Deploy to Viam Apps"
+	@echo "  make deploy       Full deployment pipeline"
+	@echo ""
+	@echo "$(YELLOW)Utilities:$(NC)"
+	@echo "  make clean        Clean build artifacts"
+	@echo "  make fresh        Clean + fresh install"
+	@echo ""
+	@echo "$(BLUE)🌐 Production URL: https://inventorymonitor_pret.viamapplications.com$(NC)"
+
+# Default target
+.DEFAULT_GOAL := help
+
+</content>
+</file>
+<file path=".gitignore">
+<filename>.gitignore</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/package.json">
+<filename>package.json</filename>
+<content>
+{
+  "name": "pret-inventory-monitor",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Real-time inventory monitoring PWA for Pret A Manger",
+  "keywords": ["pret", "inventory", "monitoring", "pwa", "viam", "iot"],
+  "author": "Viam Solutions Engineering",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host --port 5173",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host --port 4173",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
+    "test": "echo 'No tests yet' && exit 0"
+  },
+  "dependencies": {
+    "@viamrobotics/sdk": "^0.40.2",
+    "js-cookie": "^3.0.5",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@types/leaflet": "^1.9.8",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}
+</content>
+</file>
+<file path="src/monitor/tsconfig.json">
+<filename>tsconfig.json</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/vite.config.js">
+<filename>vite.config.js</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/index.html">
+<filename>index.html</filename>
+<content>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pret Inventory Monitor</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Real-time inventory monitoring for Pret A Manger locations">
+  <meta name="theme-color" content="#e11d2f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pret Monitor">
+  
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="./style.css">
+  
+  <!-- Leaflet CSS for maps -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="./style.css" as="style">
+  <link rel="preload" href="./icon-192.png" as="image">
+  
+  <!-- DNS prefetch for external resources -->
+  <link rel="dns-prefetch" href="//app.viam.com">
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+</head>
+<body>
+  <!-- App Container -->
+  <div id="app">
+    <!-- Loading State -->
+    <div class="loading-screen">
+      <div class="loading-container">
+        <div class="loading-logo">🥪</div>
+        <h1 class="loading-title">Pret Monitor</h1>
+        <p class="loading-subtitle">Connecting to stores...</p>
+        <div class="loading-spinner">
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offline Indicator -->
+  <div id="offline-indicator" class="offline-indicator" style="display: none;">
+    <span class="offline-icon">📶</span>
+    <span class="offline-text">You're offline</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script type="module" src="./src/main.ts"></script>
+  
+  <!-- Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('SW registered: ', registration);
+          })
+          .catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
+
+  <style>
+    /* Loading Screen Styles */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #e11d2f 0%, #b71c2c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+    }
+    
+    .loading-container {
+      text-align: center;
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .loading-logo {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounce 2s infinite;
+    }
+    
+    .loading-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+    
+    .loading-subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+    
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .spinner-dot {
+      width: 12px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: spinnerPulse 1.5s ease-in-out infinite;
+    }
+    
+    .spinner-dot:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+    
+    .spinner-dot:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+    
+    /* Offline Indicator */
+    .offline-indicator {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #374151;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes spinnerPulse {
+      0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</body>
+</html>
+</content>
+</file>
+<file path="src/monitor/style.css">
+<filename>style.css</filename>
+<content>
+/* Pret Inventory Monitor - Mobile-First Styles */
+
+/* CSS Variables & Design System */
+:root {
+  /* Pret-inspired color palette */
+  --primary-red: #e11d2f;
+  --primary-dark: #b71c2c;
+  --accent-green: #10b981;
+  --accent-blue: #3b82f6;
+  --warning-orange: #f59e0b;
+  --error-red: #ef4444;
+  
+  /* Neutral grays */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  /* Spacing system */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+  
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 250ms ease-out;
+  --transition-slow: 350ms ease-out;
+  
+  /* Z-index scale */
+  --z-dropdown: 1000;
+  --z-modal: 1050;
+  --z-toast: 1100;
+}
+
+/* CSS Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  font-weight: var(--font-normal);
+  color: var(--gray-900);
+  background-color: var(--gray-50);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Mobile Container */
+.mobile-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Top Navigation */
+.top-nav {
+  background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-dropdown);
+  box-shadow: var(--shadow-md);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brand-logo {
+  font-size: var(--text-2xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+}
+
+.brand-text {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.025em;
+}
+
+.nav-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent-green);
+  animation: pulse 2s infinite;
+}
+
+.connection-status.offline .status-dot {
+  background: var(--error-red);
+}
+
+.alert-badge {
+  background: var(--warning-orange);
+  color: var(--gray-900);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  min-width: 20px;
+  text-align: center;
+  animation: bounce 1s infinite;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+  background: white;
+  display: flex;
+  border-bottom: 1px solid var(--gray-200);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tab-navigation::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: var(--space-4) var(--space-3);
+  border: none;
+  background: transparent;
+  color: var(--gray-500);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+  color: var(--gray-700);
+  background: var(--gray-50);
+}
+
+.tab-btn.active {
+  color: var(--primary-red);
+  border-bottom-color: var(--primary-red);
+  background: var(--gray-50);
+}
+
+.tab-icon {
+  font-size: var(--text-lg);
+}
+
+.tab-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  background: var(--error-red);
+  color: white;
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  min-width: 16px;
+  text-align: center;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  padding: var(--space-5);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Store Views */
+.stores-header {
+  margin-bottom: var(--space-6);
+}
+
+.stores-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.stores-subtitle {
+  color: var(--gray-600);
+  font-size: var(--text-base);
+}
+
+.stores-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.store-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.store-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.store-card.selected {
+  border-color: var(--primary-red);
+  box-shadow: 0 0 0 1px var(--primary-red), var(--shadow-md);
+}
+
+.store-toggle {
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.store-info {
+  flex: 1;
+}
+
+.store-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.store-name {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--gray-900);
+}
+
+.store-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.store-status.status-online {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-green);
+}
+
+.store-status.status-offline {
+  background: rgba(107, 114, 128, 0.1);
+  color: var(--gray-500);
+}
+
+.store-status.status-unknown {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-orange);
+}
+
+.store-address {
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+}
+
+.store-region {
+  display: inline-block;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  text-transform: capitalize;
+}
+
+.store-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.toggle-switch {
+  width: 52px;
+  height: 28px;
+  background: var(--gray-300);
+  border-radius: var(--radius-full);
+  position: relative;
+  transition: background-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.toggle-switch.active {
+  background: var(--primary-red);
+}
+
+.toggle-thumb {
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: var(--radius-full);
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-switch.active .toggle-thumb {
+  transform: translateX(24px);
+}
+
+.alert-count {
+  background: var(--error-red);
+  color: white;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  min-width: 20px;
+  text-align: center;
+}
+
+.stores-summary {
+  margin-top: var(--space-8);
+  padding: var(--space-5);
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.stores-summary h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.last-sync {
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+}
+
+/* Map View */
+.map-header {
+  margin-bottom: var(--space-6);
+}
+
+.map-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.map-subtitle {
+  color: var(--gray-600);
+  font-size: var(--text-base);
+}
+
+.map-container {
+  height: 60vh;
+  min-height: 400px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  background: var(--gray-100);
+}
+
+.map-legend {
+  margin-top: var(--space-5);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--gray-700);
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+}
+
+.legend-dot.online {
+  background: var(--accent-green);
+}
+
+.legend-dot.offline {
+  background: var(--gray-500);
+}
+
+.legend-dot.alert {
+  background: var(--error-red);
+}
+
+/* Custom Map Markers */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.marker-container {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-fast);
+}
+
+.marker-container:hover {
+  transform: scale(1.1);
+}
+
+.marker-icon {
+  font-size: 18px;
+  color: white;
+}
+
+.marker-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--error-red);
+  color: white;
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  min-width: 16px;
+  text-align: center;
+  border: 2px solid white;
+}
+
+.map-popup {
+  padding: var(--space-3);
+  min-width: 200px;
+}
+
+.map-popup h3 {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-2);
+}
+
+.map-popup p {
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  margin-bottom: var(--space-1);
+}
+
+.status-online {
+  color: var(--accent-green);
+  font-weight: var(--font-medium);
+}
+
+.status-offline {
+  color: var(--gray-500);
+  font-weight: var(--font-medium);
+}
+
+.status-unknown {
+  color: var(--warning-orange);
+  font-weight: var(--font-medium);
+}
+
+/* Alerts View */
+.alerts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.alerts-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+}
+
+.alerts-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.btn-secondary {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-200);
+  border-color: var(--gray-400);
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.no-alerts {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--gray-500);
+  font-size: var(--text-lg);
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.alert-item {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  border-left: 4px solid transparent;
+}
+
+.alert-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.alert-item.unread {
+  border-left-color: var(--primary-red);
+  background: linear-gradient(90deg, rgba(225, 29, 47, 0.02) 0%, white 100%);
+}
+
+.alert-content {
+  flex: 1;
+  padding: var(--space-5);
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.alert-severity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.severity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+.alert-severity.severity-critical {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-red);
+}
+
+.alert-severity.severity-critical .severity-dot {
+  background: var(--error-red);
+}
+
+.alert-severity.severity-high {
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+.alert-severity.severity-high .severity-dot {
+  background: #f97316;
+}
+
+.alert-severity.severity-medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-orange);
+}
+
+.alert-severity.severity-medium .severity-dot {
+  background: var(--warning-orange);
+}
+
+.alert-severity.severity-low {
+  background: rgba(6, 182, 212, 0.1);
+  color: #06b6d4;
+}
+
+.alert-severity.severity-low .severity-dot {
+  background: #06b6d4;
+}
+
+.alert-time {
+  color: var(--gray-500);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.alert-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+  line-height: 1.4;
+}
+
+.alert-message {
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin-bottom: var(--space-3);
+}
+
+.alert-location {
+  color: var(--gray-500);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+.alert-image-preview {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  margin: var(--space-5);
+  margin-left: 0;
+}
+
+.alert-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Camera View */
+.camera-empty {
+  text-align: center;
+  padding: var(--space-12);
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.camera-empty h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-3);
+}
+
+.camera-empty p {
+  color: var(--gray-600);
+  font-size: var(--text-base);
+}
+
+.camera-header {
+  margin-bottom: var(--space-6);
+}
+
+.camera-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.camera-subtitle {
+  color: var(--gray-600);
+  font-size: var(--text-base);
+}
+
+.camera-grid {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .camera-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .camera-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.camera-feed {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.camera-feed .camera-header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.camera-feed .camera-header h3 {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--gray-900);
+}
+
+.camera-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+}
+
+.camera-container {
+  aspect-ratio: 16/9;
+  background: var(--gray-100);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-loading {
+  color: var(--gray-500);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.camera-info {
+  padding: var(--space-4);
+  border-top: 1px solid var(--gray-200);
+}
+
+.camera-location {
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+}
+
+/* Modal Styles */
+.alert-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.modal-close {
+  background: var(--gray-100);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: var(--text-xl);
+  color: var(--gray-600);
+  transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+  background: var(--gray-200);
+  color: var(--gray-800);
+}
+
+.modal-body {
+  padding: var(--space-6);
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.modal-footer {
+  padding: var(--space-6);
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.btn-primary {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.alert-images {
+  margin-top: var(--space-5);
+}
+
+.image-container {
+  margin-bottom: var(--space-4);
+}
+
+.image-container h4 {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--gray-700);
+  margin-bottom: var(--space-2);
+}
+
+.alert-image {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Error Messages */
+.error-message {
+  position: fixed;
+  top: var(--space-5);
+  left: var(--space-5);
+  right: var(--space-5);
+  background: var(--error-red);
+  color: white;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  z-index: var(--z-toast);
+  box-shadow: var(--shadow-lg);
+  animation: slideInDown 0.3s ease-out;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    transform: translate3d(0,0,0);
+  }
+  40%, 43% {
+    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
+    transform: translate3d(0, -6px, 0);
+  }
+  70% {
+    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
+    transform: translate3d(0, -3px, 0);
+  }
+  90% {
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translate3d(0, -100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .content-area {
+    padding: var(--space-4);
+  }
+  
+  .stores-header h2,
+  .map-header h2,
+  .alerts-header h2,
+  .camera-header h2 {
+    font-size: var(--text-xl);
+  }
+  
+  .alert-item {
+    flex-direction: column;
+  }
+  
+  .alert-image-preview {
+    width: 100%;
+    height: 200px;
+    margin: 0;
+    margin-top: var(--space-4);
+  }
+  
+  .modal-content {
+    margin: var(--space-3);
+    max-width: none;
+  }
+  
+  .store-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  .alerts-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .content-area {
+    padding: var(--space-8);
+  }
+  
+  .tab-navigation {
+    justify-content: center;
+  }
+  
+  .tab-btn {
+    flex: none;
+    min-width: 120px;
+  }
+}
+
+/* Tablet and Desktop Enhancements */
+@media (min-width: 1024px) {
+  .stores-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+  
+  .map-container {
+    height: 70vh;
+    min-height: 500px;
+  }
+}
+
+/* Dark mode support (for future implementation) */
+@media (prefers-color-scheme: dark) {
+  /* Add dark mode styles here if needed */
+}
+
+/* Print styles */
+@media print {
+  .tab-navigation,
+  .modal-backdrop,
+  .error-message {
+    display: none;
+  }
+  
+  .mobile-container {
+    background: white;
+  }
+  
+  .content-area {
+    padding: 0;
+  }
+}
+</content>
+</file>
+<file path="src/monitor/public/sw.js">
+<filename>sw.js</filename>
+<content>
+// Pret Inventory Monitor - Service Worker
+// Handles push notifications, offline caching, and background sync
+
+const CACHE_NAME = 'pret-monitor-v1.0.0';
+const STATIC_CACHE_URLS = [
+  './',
+  './index.html',
+  './style.css',
+  './icon-192.png',
+  './icon-512.png',
+  './manifest.json'
+];
+
+// Install event - cache static assets
+self.addEventListener('install', event => {
+  console.log('[SW] Installing service worker...');
+  
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_CACHE_URLS);
+      })
+      .then(() => {
+        console.log('[SW] Installation complete');
+        return self.skipWaiting();
+      })
+      .catch(error => {
+        console.error('[SW] Installation failed:', error);
+      })
+  );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
+  console.log('[SW] Activating service worker...');
+  
+  event.waitUntil(
+    caches.keys()
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('[SW] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+      .then(() => {
+        console.log('[SW] Activation complete');
+        return self.clients.claim();
+      })
+  );
+});
+
+// Fetch event - serve from cache with network fallback
+self.addEventListener('fetch', event => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+  
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return cached version if available
+        if (response) {
+          return response;
+        }
+        
+        // Otherwise fetch from network
+        return fetch(event.request)
+          .then(response => {
+            // Don't cache non-successful responses
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            
+            // Cache successful responses for static assets
+            if (shouldCache(event.request.url)) {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(event.request, responseToCache);
+                });
+            }
+            
+            return response;
+          })
+          .catch(() => {
+            // Return offline page for navigation requests
+            if (event.request.mode === 'navigate') {
+              return caches.match('./offline.html');
+            }
+            
+            // Return placeholder for images
+            if (event.request.destination === 'image') {
+              return new Response(
+                '<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#f3f4f6"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280">Image Offline</text></svg>',
+                { headers: { 'Content-Type': 'image/svg+xml' } }
+              );
+            }
+          });
+      })
+  );
+});
+
+// Push event - handle incoming push notifications
+self.addEventListener('push', event => {
+  console.log('[SW] Push message received');
+  
+  let notificationData = {
+    title: 'Pret Alert',
+    body: 'New alert received',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'pret-alert',
+    requireInteraction: false,
+    data: {}
+  };
+
+  // Parse push data if available
+  if (event.data) {
+    try {
+      const pushData = event.data.json();
+      notificationData = {
+        title: pushData.title || notificationData.title,
+        body: pushData.body || notificationData.body,
+        icon: pushData.icon || notificationData.icon,
+        badge: pushData.badge || notificationData.badge,
+        image: pushData.image,
+        tag: pushData.tag || notificationData.tag,
+        requireInteraction: pushData.requireInteraction || false,
+        data: pushData.data || {},
+        actions: pushData.actions || [
+          {
+            action: 'view',
+            title: 'View Details',
+            icon: './icon-192.png'
+          },
+          {
+            action: 'dismiss',
+            title: 'Dismiss'
+          }
+        ]
+      };
+    } catch (error) {
+      console.error('[SW] Error parsing push data:', error);
+      notificationData.body = event.data.text();
+    }
+  }
+
+  // Show notification
+  event.waitUntil(
+    self.registration.showNotification(notificationData.title, {
+      body: notificationData.body,
+      icon: notificationData.icon,
+      badge: notificationData.badge,
+      image: notificationData.image,
+      tag: notificationData.tag,
+      requireInteraction: notificationData.requireInteraction,
+      data: notificationData.data,
+      actions: notificationData.actions,
+      silent: false,
+      vibrate: [200, 100, 200], // Vibration pattern for mobile
+      timestamp: Date.now()
+    })
+  );
+});
+
+// Notification click event - handle user interaction
+self.addEventListener('notificationclick', event => {
+  console.log('[SW] Notification clicked:', event.notification.tag);
+  
+  event.notification.close();
+  
+  const notificationData = event.notification.data || {};
+  const action = event.action;
+  
+  // Handle different actions
+  if (action === 'dismiss') {
+    return; // Just close the notification
+  }
+  
+  // Default action or 'view' action - open the app
+  const urlToOpen = notificationData.url || './';
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        // Check if app is already open
+        for (const client of clientList) {
+          if (client.url.startsWith(self.location.origin)) {
+            // Focus existing window and navigate to alert
+            if (notificationData.alertId) {
+              client.postMessage({
+                type: 'NOTIFICATION_CLICKED',
+                alertId: notificationData.alertId,
+                storeId: notificationData.storeId
+              });
+            }
+            return client.focus();
+          }
+        }
+        
+        // Open new window if none exists
+        return clients.openWindow(urlToOpen);
+      })
+  );
+});
+
+// Background sync event - for offline data synchronization
+self.addEventListener('sync', event => {
+  console.log('[SW] Background sync:', event.tag);
+  
+  if (event.tag === 'background-sync') {
+    event.waitUntil(
+      // Sync pending data when back online
+      syncPendingData()
+    );
+  }
+});
+
+// Message event - handle messages from main app
+self.addEventListener('message', event => {
+  console.log('[SW] Message received:', event.data);
+  
+  const { type, data } = event.data;
+  
+  switch (type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+      
+    case 'CACHE_ALERT_IMAGE':
+      if (data.imageUrl) {
+        cacheAlertImage(data.imageUrl);
+      }
+      break;
+      
+    case 'CLEAR_NOTIFICATIONS':
+      clearAllNotifications();
+      break;
+      
+    case 'UPDATE_BADGE':
+      // Update app badge with unread count
+      if ('setAppBadge' in navigator) {
+        navigator.setAppBadge(data.count || 0);
+      }
+      break;
+      
+    case 'TRIGGER_SYNC':
+      // Manually trigger background sync
+      if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+        self.registration.sync.register('background-sync');
+      }
+      break;
+      
+    default:
+      console.log('[SW] Unknown message type:', type);
+  }
+});
+
+// Utility Functions
+
+/**
+ * Determine if a URL should be cached
+ */
+function shouldCache(url) {
+  // Cache static assets and API responses
+  return url.includes('/static/') || 
+         url.includes('/assets/') || 
+         url.includes('.css') || 
+         url.includes('.js') || 
+         url.includes('.png') || 
+         url.includes('.jpg') || 
+         url.includes('.svg') ||
+         url.includes('/api/') ||
+         url.includes('icon-') ||
+         url.includes('manifest.json');
+}
+
+/**
+ * Cache alert images for offline viewing
+ */
+async function cacheAlertImage(imageUrl) {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.add(imageUrl);
+    console.log('[SW] Cached alert image:', imageUrl);
+  } catch (error) {
+    console.error('[SW] Failed to cache alert image:', error);
+  }
+}
+
+/**
+ * Clear all notifications
+ */
+async function clearAllNotifications() {
+  try {
+    const notifications = await self.registration.getNotifications();
+    notifications.forEach(notification => notification.close());
+    console.log('[SW] Cleared all notifications');
+  } catch (error) {
+    console.error('[SW] Failed to clear notifications:', error);
+  }
+}
+
+/**
+ * Sync pending data when back online
+ */
+async function syncPendingData() {
+  try {
+    console.log('[SW] Starting background sync...');
+    
+    // Get pending alerts from IndexedDB or localStorage
+    const pendingAlerts = await getPendingAlerts();
+    
+    if (pendingAlerts.length > 0) {
+      console.log('[SW] Found pending alerts:', pendingAlerts.length);
+      
+      // Send pending alerts to server or process them
+      for (const alert of pendingAlerts) {
+        await processPendingAlert(alert);
+      }
+      
+      // Clear pending alerts after successful sync
+      await clearPendingAlerts();
+      console.log('[SW] Synced pending alerts:', pendingAlerts.length);
+      
+      // Notify all clients that sync is complete
+      const clients = await self.clients.matchAll();
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'SYNC_COMPLETE',
+          syncedCount: pendingAlerts.length
+        });
+      });
+    }
+    
+    // Check for critical alerts that need immediate attention
+    await checkForCriticalAlerts();
+    
+  } catch (error) {
+    console.error('[SW] Background sync failed:', error);
+  }
+}
+
+/**
+ * Get pending alerts from storage
+ */
+async function getPendingAlerts() {
+  try {
+    // In a real implementation, you'd use IndexedDB for better offline storage
+    // For now, we'll simulate with an empty array
+    // You could extend this to actually store and retrieve pending alerts
+    
+    return []; // Return empty for now
+    
+    /* Example IndexedDB implementation:
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('PretAlertsDB', 1);
+      request.onsuccess = () => {
+        const db = request.result;
+        const transaction = db.transaction(['pendingAlerts'], 'readonly');
+        const store = transaction.objectStore('pendingAlerts');
+        const getAll = store.getAll();
+        getAll.onsuccess = () => resolve(getAll.result);
+        getAll.onerror = () => reject(getAll.error);
+      };
+      request.onerror = () => reject(request.error);
+    });
+    */
+    
+  } catch (error) {
+    console.error('[SW] Failed to get pending alerts:', error);
+    return [];
+  }
+}
+
+/**
+ * Process a pending alert
+ */
+async function processPendingAlert(alert) {
+  try {
+    console.log('[SW] Processing pending alert:', alert.id);
+    
+    // In a real implementation, you might:
+    // 1. Send to analytics service
+    // 2. Update external systems (YOOBIC, etc.)
+    // 3. Send to notification service
+    // 4. Log to monitoring system
+    
+    // For now, we'll just log it
+    console.log('[SW] Alert processed:', alert);
+    
+    // Example: Send to external webhook
+    /*
+    await fetch('/api/alerts/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(alert)
+    });
+    */
+    
+  } catch (error) {
+    console.error('[SW] Failed to process pending alert:', error);
+    throw error; // Re-throw to handle retry logic
+  }
+}
+
+/**
+ * Clear pending alerts from storage
+ */
+async function clearPendingAlerts() {
+  try {
+    console.log('[SW] Clearing pending alerts...');
+    
+    // In a real implementation with IndexedDB:
+    /*
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('PretAlertsDB', 1);
+      request.onsuccess = () => {
+        const db = request.result;
+        const transaction = db.transaction(['pendingAlerts'], 'readwrite');
+        const store = transaction.objectStore('pendingAlerts');
+        const clear = store.clear();
+        clear.onsuccess = () => resolve();
+        clear.onerror = () => reject(clear.error);
+      };
+      request.onerror = () => reject(request.error);
+    });
+    */
+    
+  } catch (error) {
+    console.error('[SW] Failed to clear pending alerts:', error);
+  }
+}
+
+/**
+ * Check for critical alerts that need immediate attention
+ */
+async function checkForCriticalAlerts() {
+  try {
+    console.log('[SW] Checking for critical alerts...');
+    
+    // This would check with Viam or your alerting service for critical alerts
+    // and show notifications even if the app isn't open
+    
+    // Example implementation:
+    /*
+    const response = await fetch('/api/alerts/critical', {
+      headers: { 'Authorization': 'Bearer ' + await getStoredAuthToken() }
+    });
+    
+    if (response.ok) {
+      const criticalAlerts = await response.json();
+      
+      for (const alert of criticalAlerts) {
+        if (alert.severity === 'critical') {
+          await self.registration.showNotification(alert.title, {
+            body: alert.message,
+            icon: './icon-192.png',
+            badge: './icon-192.png',
+            tag: `critical-${alert.id}`,
+            requireInteraction: true,
+            vibrate: [300, 100, 300, 100, 300],
+            data: { alertId: alert.id, storeId: alert.storeId }
+          });
+        }
+      }
+    }
+    */
+    
+  } catch (error) {
+    console.error('[SW] Failed to check critical alerts:', error);
+  }
+}
+
+// Periodic background sync for critical alerts (if supported)
+self.addEventListener('periodicsync', event => {
+  console.log('[SW] Periodic sync:', event.tag);
+  
+  if (event.tag === 'critical-alert-check') {
+    event.waitUntil(
+      checkForCriticalAlerts()
+    );
+  }
+});
+
+// Handle online/offline events
+self.addEventListener('online', () => {
+  console.log('[SW] Device back online - triggering sync');
+  
+  // Trigger background sync when coming back online
+  if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+    self.registration.sync.register('background-sync');
+  }
+});
+
+self.addEventListener('offline', () => {
+  console.log('[SW] Device went offline');
+});
+
+// Handle errors
+self.addEventListener('error', event => {
+  console.error('[SW] Error:', event.error);
+  
+  // Log error to monitoring service
+  // logErrorToService(event.error);
+});
+
+self.addEventListener('unhandledrejection', event => {
+  console.error('[SW] Unhandled promise rejection:', event.reason);
+  
+  // Log error to monitoring service
+  // logErrorToService(event.reason);
+});
+
+// Handle beforeinstallprompt for PWA installation
+self.addEventListener('beforeinstallprompt', event => {
+  console.log('[SW] PWA install prompt available');
+  
+  // Store the event for later use
+  self.deferredPrompt = event;
+  
+  // Show custom install UI
+  event.preventDefault();
+});
+
+// Handle app installation
+self.addEventListener('appinstalled', event => {
+  console.log('[SW] PWA was installed');
+  
+  // Track installation for analytics
+  // trackPWAInstallation();
+});
+
+// Handle visibility changes for better performance
+self.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    console.log('[SW] App backgrounded - reducing activity');
+  } else {
+    console.log('[SW] App foregrounded - resuming activity');
+  }
+});
+
+// Log service worker lifecycle
+console.log('[SW] Service Worker script loaded');
+
+// Optional: Send performance metrics
+self.addEventListener('load', () => {
+  // Report load time and other metrics
+  console.log('[SW] App fully loaded');
+});
+
+// Handle network status changes
+function updateOnlineStatus() {
+  const isOnline = navigator.onLine;
+  console.log('[SW] Network status:', isOnline ? 'online' : 'offline');
+  
+  // Notify all clients about network status
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'NETWORK_STATUS_CHANGE',
+        isOnline: isOnline
+      });
+    });
+  });
+}
+
+// Listen for network changes
+self.addEventListener('online', updateOnlineStatus);
+self.addEventListener('offline', updateOnlineStatus);
+
+// Initialize service worker
+console.log('[SW] Pret Inventory Monitor Service Worker initialized');
+
+// Version info
+console.log('[SW] Cache version:', CACHE_NAME);
+console.log('[SW] Cached URLs:', STATIC_CACHE_URLS);
+
+// Feature detection
+console.log('[SW] Push notifications supported:', 'PushManager' in window);
+console.log('[SW] Background sync supported:', 'serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype);
+console.log('[SW] Periodic sync supported:', 'serviceWorker' in navigator && 'periodicSync' in window.ServiceWorkerRegistration.prototype);
+console.log('[SW] App badge supported:', 'setAppBadge' in navigator);
+</content>
+</file>
+<file path="src/monitor/public/manifest.json">
+<filename>manifest.json</filename>
+<content>
+{
+  "name": "Pret Inventory Monitor",
+  "short_name": "Pret Monitor",
+  "description": "Real-time inventory monitoring for Pret A Manger locations with smart alerting and mobile-first interface",
+  "theme_color": "#e11d2f",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "start_url": "./",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View Alerts",
+      "short_name": "Alerts",
+      "description": "View active alerts",
+      "url": "./?tab=alerts",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Store Map",
+      "short_name": "Map",
+      "description": "View store locations on map",
+      "url": "./?tab=map",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Live Cameras",
+      "short_name": "Cameras",
+      "description": "View live camera feeds",
+      "url": "./?tab=camera",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
+</content>
+</file>
+<file path="src/monitor/public/offline.html">
+<filename>offline.html</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/src/alerts.ts">
+<filename>alerts.ts</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/src/camera.ts">
+<filename>camera.ts</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/src/main.ts">
+<filename>main.ts</filename>
+<content>
+import * as VIAM from "@viamrobotics/sdk";
+import Cookies from "js-cookie";
+import type { StoreLocation, Alert, AppState, ViamCredentials, ViewType, SensorReading } from './types';
+import { AlertManager, SmartAlertFilter } from './alerts';
+import { formatRelativeTime, debounce, isStoreActive, safeJSONParse, playNotificationSound } from './utils';
+
+/**
+ * Machine Connection Manager - Handles multiple Viam connections
+ */
+class MachineConnectionManager {
+  private connections = new Map<string, VIAM.RobotClient>();
+  private credentials: ViamCredentials | null = null;
+
+  async initialize(): Promise<void> {
+    // Get credentials from cookies (set by Viam Apps)
+    const machineId = window.location.pathname.split("/")[2];
+    if (machineId) {
+      try {
+        const credData = Cookies.get(machineId);
+        if (credData) {
+          this.credentials = JSON.parse(credData);
+        }
+      } catch (error) {
+        console.error('Failed to parse credentials:', error);
+      }
+    }
+  }
+
+  async connectToStore(store: StoreLocation): Promise<boolean> {
+    if (!this.credentials) {
+      console.error('No credentials available');
+      return false;
+    }
+
+    try {
+      const opts: VIAM.ViamClientOptions = {
+        serviceHost: "https://app.viam.com",
+        credentials: {
+          type: "api-key",
+          authEntity: this.credentials.id,
+          payload: this.credentials.key,
+        },
+      };
+
+      const client = await VIAM.createViamClient(opts);
+      const robot = await client.appClient.getRobot(store.machineId);
+      
+      if (robot) {
+        this.connections.set(store.id, await client.connectToMachine({
+          host: this.credentials.hostname,
+          credentials: {
+            type: "api-key",
+            authEntity: this.credentials.id,
+            payload: this.credentials.key,
+          }
+        }));
+        console.log(`Connected to ${store.name}`);
+        return true;
+      }
+    } catch (error) {
+      console.error(`Failed to connect to ${store.name}:`, error);
+    }
+    return false;
+  }
+
+  async getSensorData(storeId: string): Promise<SensorReading[]> {
+    const client = this.connections.get(storeId);
+    if (!client) return [];
+
+    try {
+      // Get fill percentage sensor readings
+      const fillSensor = await client.getResource('sensor', 'fill-sensor');
+      const readings = await fillSensor.getReadings();
+      
+      return Object.entries(readings).map(([region, percentage]) => ({
+        componentName: region,
+        reading: percentage,
+        timestamp: new Date().toISOString(),
+        machineId: storeId
+      }));
+    } catch (error) {
+      console.error(`Failed to get sensor data for ${storeId}:`, error);
+      return [];
+    }
+  }
+
+  async getCameraFrame(storeId: string): Promise<string | null> {
+    const client = this.connections.get(storeId);
+    if (!client) return null;
+
+    try {
+      // Get annotated camera feed from fill-percent-camera
+      const camera = await client.getResource('camera', 'fill-camera');
+      const image = await camera.getImage();
+      
+      // Convert to base64 data URL
+      const blob = new Blob([image], { type: 'image/jpeg' });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error(`Failed to get camera frame for ${storeId}:`, error);
+      return null;
+    }
+  }
+
+  async getTemperatureData(storeId: string): Promise<SensorReading[]> {
+    const client = this.connections.get(storeId);
+    if (!client) return [];
+
+    try {
+      // Get LoRaWAN temperature sensors
+      const tempSensors = await client.resourceNames().filter(name => 
+        name.namespace === 'viam' && 
+        name.type === 'sensor' && 
+        name.name.includes('temp')
+      );
+
+      const readings: SensorReading[] = [];
+      for (const sensorName of tempSensors) {
+        const sensor = await client.getResource('sensor', sensorName.name);
+        const data = await sensor.getReadings();
+        
+        if (data.TempC_SHT !== undefined) {
+          readings.push({
+            componentName: sensorName.name,
+            reading: data.TempC_SHT,
+            timestamp: new Date().toISOString(),
+            machineId: storeId
+          });
+        }
+      }
+      
+      return readings;
+    } catch (error) {
+      console.error(`Failed to get temperature data for ${storeId}:`, error);
+      return [];
+    }
+  }
+
+  isConnected(storeId: string): boolean {
+    return this.connections.has(storeId);
+  }
+}
+
+/**
+ * Push Notification Manager
+ */
+class PushNotificationManager {
+  private permission: NotificationPermission = 'default';
+
+  async initialize(): Promise<void> {
+    if ('Notification' in window) {
+      this.permission = Notification.permission;
+      if (this.permission === 'default') {
+        await this.requestPermission();
+      }
+    }
+
+    // Register service worker for push notifications
+    if ('serviceWorker' in navigator) {
+      try {
+        await navigator.serviceWorker.register('./sw.js');
+        console.log('Service Worker registered');
+      } catch (error) {
+        console.error('Service Worker registration failed:', error);
+      }
+    }
+  }
+
+  async requestPermission(): Promise<boolean> {
+    if ('Notification' in window) {
+      this.permission = await Notification.requestPermission();
+      return this.permission === 'granted';
+    }
+    return false;
+  }
+
+  async sendPushNotification(alert: Alert): Promise<void> {
+    if (this.permission !== 'granted') return;
+
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        
+        await registration.showNotification(alert.title, {
+          body: alert.message.split('\n')[0],
+          icon: './icon-192.png',
+          badge: './icon-192.png',
+          image: alert.imageUrl,
+          data: {
+            alertId: alert.id,
+            storeId: alert.storeId,
+            url: `?alert=${alert.id}`
+          },
+          tag: `alert-${alert.type}-${alert.storeId}`,
+          requireInteraction: alert.severity === 'critical',
+          actions: [
+            { action: 'view', title: 'View Details' },
+            { action: 'dismiss', title: 'Dismiss' }
+          ]
+        });
+
+        // Play sound for high priority alerts
+        if (alert.severity === 'critical' || alert.severity === 'high') {
+          playNotificationSound();
+        }
+      } catch (error) {
+        console.error('Failed to send push notification:', error);
+      }
+    }
+  }
+}
+
+/**
+ * Interactive Map Component using Leaflet
+ */
+class InteractiveMap {
+  private map: any = null;
+  private markers = new Map<string, any>();
+  private L: any = null;
+
+  async initialize(containerId: string): Promise<void> {
+    // Dynamically import Leaflet
+    try {
+      // @ts-ignore
+      this.L = window.L || await import('leaflet');
+      
+      // Initialize map centered on NYC
+      this.map = this.L.map(containerId).setView([40.7589, -73.9851], 12);
+      
+      // Add OpenStreetMap tiles (free, no API key needed)
+      this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(this.map);
+
+    } catch (error) {
+      console.error('Failed to initialize map:', error);
+    }
+  }
+
+  updateStoreMarkers(stores: StoreLocation[], alerts: Alert[]): void {
+    if (!this.map || !this.L) return;
+
+    stores.forEach(store => {
+      const storeAlerts = alerts.filter(a => a.storeId === store.id && !a.read);
+      const alertCount = storeAlerts.length;
+      const markerColor = this.getMarkerColor(store.status, alertCount);
+      
+      if (this.markers.has(store.id)) {
+        this.updateMarker(store.id, markerColor, alertCount);
+      } else {
+        this.createMarker(store, markerColor, alertCount);
+      }
+    });
+
+    // Auto-zoom to fit all markers
+    if (this.markers.size > 0) {
+      const group = this.L.featureGroup(Array.from(this.markers.values()));
+      this.map.fitBounds(group.getBounds().pad(0.1));
+    }
+  }
+
+  private createMarker(store: StoreLocation, color: string, alertCount: number): void {
+    const icon = this.L.divIcon({
+      className: 'custom-marker',
+      html: `
+        <div class="marker-container" style="background-color: ${color}">
+          <span class="marker-icon">🏪</span>
+          ${alertCount > 0 ? `<span class="marker-badge">${alertCount}</span>` : ''}
+        </div>
+      `,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+
+    const marker = this.L.marker([store.coords.lat, store.coords.lng], { icon })
+      .bindPopup(`
+        <div class="map-popup">
+          <h3>${store.name}</h3>
+          <p>${store.address}</p>
+          <p>Status: <span class="status-${store.status}">${store.status}</span></p>
+          ${alertCount > 0 ? `<p class="alert-count">${alertCount} active alerts</p>` : ''}
+        </div>
+      `)
+      .addTo(this.map);
+
+    this.markers.set(store.id, marker);
+  }
+
+  private updateMarker(storeId: string, color: string, alertCount: number): void {
+    const marker = this.markers.get(storeId);
+    if (marker) {
+      const newIcon = this.L.divIcon({
+        className: 'custom-marker',
+        html: `
+          <div class="marker-container" style="background-color: ${color}">
+            <span class="marker-icon">🏪</span>
+            ${alertCount > 0 ? `<span class="marker-badge">${alertCount}</span>` : ''}
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+      });
+      marker.setIcon(newIcon);
+    }
+  }
+
+  private getMarkerColor(status: StoreLocation['status'], alertCount: number): string {
+    if (alertCount > 0) return '#ef4444'; // Red for alerts
+    if (status === 'online') return '#10b981'; // Green
+    if (status === 'offline') return '#6b7280'; // Gray
+    return '#f59e0b'; // Yellow for unknown
+  }
+}
+
+/**
+ * Main Application Class
+ */
+class InventoryMonitorApp {
+  private state: AppState;
+  private connectionManager: MachineConnectionManager;
+  private alertManager: AlertManager;
+  private notificationManager: PushNotificationManager;
+  private smartFilter: SmartAlertFilter;
+  private map: InteractiveMap;
+  private updateInterval: NodeJS.Timeout | null = null;
+
+  // Pret store configuration
+  private readonly stores: StoreLocation[] = [
+    {
+      id: 'store-5th-ave',
+      name: 'Pret 5th Avenue',
+      address: '389 5th Ave, New York, NY 10016',
+      coords: { lat: 40.7516, lng: -73.9755 },
+      machineId: 'a7c5717d-f48e-4ac8-b179-7c7aa73571de',
+      status: 'unknown',
+      region: 'manhattan'
+    },
+    {
+      id: 'store-times-square',
+      name: 'Pret Times Square',
+      address: '1500 Broadway, New York, NY 10036',
+      coords: { lat: 40.7589, lng: -73.9851 },
+      machineId: 'demo-machine-times-square',
+      status: 'unknown',
+      region: 'manhattan'
+    },
+    {
+      id: 'store-grand-central',
+      name: 'Pret Grand Central',
+      address: '89 E 42nd St, New York, NY 10017',
+      coords: { lat: 40.7527, lng: -73.9772 },
+      machineId: 'demo-machine-grand-central',
+      status: 'unknown',
+      region: 'manhattan'
+    }
+  ];
+
+  constructor() {
+    this.state = {
+      stores: this.stores,
+      alerts: [],
+      selectedStores: new Set(),
+      currentView: 'stores',
+      isOnline: navigator.onLine,
+      lastSync: new Date().toISOString()
+    };
+
+    this.connectionManager = new MachineConnectionManager();
+    this.alertManager = new AlertManager();
+    this.notificationManager = new PushNotificationManager();
+    this.smartFilter = new SmartAlertFilter();
+    this.map = new InteractiveMap();
+
+    this.bindEvents();
+  }
+
+  async initialize(): Promise<void> {
+    console.log('🚀 Initializing Pret Inventory Monitor...');
+    
+    try {
+      // Initialize all managers
+      await this.connectionManager.initialize();
+      await this.notificationManager.initialize();
+      
+      // Load saved state
+      this.loadState();
+      
+      // Render initial UI
+      this.render();
+      
+      // Initialize map if on map view
+      if (this.state.currentView === 'map') {
+        await this.initializeMap();
+      }
+      
+      // Connect to selected stores
+      await this.connectToSelectedStores();
+      
+      // Start real-time updates
+      this.startRealTimeUpdates();
+      
+      console.log('✅ Initialization complete');
+      
+    } catch (error) {
+      console.error('❌ Initialization failed:', error);
+      this.showError('Failed to initialize app. Please refresh the page.');
+    }
+  }
+
+  private async connectToSelectedStores(): Promise<void> {
+    const selectedStores = Array.from(this.state.selectedStores);
+    if (selectedStores.length === 0) {
+      // Auto-select first store for demo
+      this.state.selectedStores.add(this.stores[0].id);
+    }
+
+    const connections = Array.from(this.state.selectedStores).map(async storeId => {
+      const store = this.stores.find(s => s.id === storeId);
+      if (store) {
+        const connected = await this.connectionManager.connectToStore(store);
+        store.status = connected ? 'online' : 'offline';
+      }
+    });
+
+    await Promise.allSettled(connections);
+    this.render();
+  }
+
+  private async initializeMap(): Promise<void> {
+    const mapContainer = document.getElementById('map-container');
+    if (mapContainer) {
+      await this.map.initialize('map-container');
+      this.map.updateStoreMarkers(this.state.stores, this.state.alerts);
+    }
+  }
+
+  private startRealTimeUpdates(): void {
+    // Update every 30 seconds
+    this.updateInterval = setInterval(async () => {
+      await this.updateAllStores();
+    }, 30000);
+
+    // Initial update
+    setTimeout(() => this.updateAllStores(), 1000);
+  }
+
+  private async updateAllStores(): Promise<void> {
+    const selectedStores = Array.from(this.state.selectedStores);
+    
+    for (const storeId of selectedStores) {
+      const store = this.stores.find(s => s.id === storeId);
+      if (store && this.connectionManager.isConnected(storeId)) {
+        await this.processStoreData(store);
+      }
+    }
+    
+    this.state.lastSync = new Date().toISOString();
+    this.render();
+  }
+
+  private async processStoreData(store: StoreLocation): Promise<void> {
+    try {
+      // Get sensor readings
+      const sensorData = await this.connectionManager.getSensorData(store.id);
+      const cameraFrame = await this.connectionManager.getCameraFrame(store.id);
+      
+      // Process fill percentage alerts
+      for (const reading of sensorData) {
+        if (this.isShelfEmpty(reading) && !this.smartFilter.shouldSuppressAlert(
+          store.id, 
+          'empty_shelf', 
+          { fillPercent: reading.reading as number, isBusinessHours: isStoreActive(store) }
+        )) {
+          await this.createEmptyShelfAlert(store, reading, cameraFrame);
+        }
+      }
+      
+      // Process temperature alerts
+      const tempData = await this.connectionManager.getTemperatureData(store.id);
+      for (const temp of tempData) {
+        if (this.isTemperatureAlert(temp) && !this.smartFilter.shouldSuppressAlert(
+          store.id,
+          'temperature',
+          { temperature: temp.reading as number, isBusinessHours: isStoreActive(store) }
+        )) {
+          await this.createTemperatureAlert(store, temp);
+        }
+      }
+      
+    } catch (error) {
+      console.error(`Failed to process data for ${store.name}:`, error);
+    }
+  }
+
+  private isShelfEmpty(reading: any): boolean {
+    return typeof reading.reading === 'number' && reading.reading < 15; // 15% threshold
+  }
+
+  private isTemperatureAlert(reading: any): boolean {
+    return typeof reading.reading === 'number' && Math.abs(reading.reading) > 5; // 5°C threshold
+  }
+
+  private async createEmptyShelfAlert(store: StoreLocation, reading: any, cameraFrame: string | null): Promise<void> {
+    const alert = this.alertManager.addAlert({
+      storeId: store.id,
+      storeName: store.name,
+      type: 'empty_shelf',
+      title: `Empty Shelves: ${reading.componentName} - ${store.name}`,
+      message: `The following shelves are empty: ${reading.componentName}\nLocation: ${store.address}\nTime: ${new Date().toLocaleString()}\n\nSee the attached image for review.`,
+      shelves: [reading.componentName],
+      confidence: 95,
+      location: store.address,
+      imageUrl: cameraFrame || undefined,
+      annotatedImageUrl: cameraFrame || undefined
+    });
+    
+    await this.notificationManager.sendPushNotification(alert);
+    this.state.alerts = this.alertManager.getAlerts();
+  }
+
+  private async createTemperatureAlert(store: StoreLocation, reading: any): Promise<void> {
+    const alert = this.alertManager.addAlert({
+      storeId: store.id,
+      storeName: store.name,
+      type: 'temperature',
+      title: `Temperature Alert - ${store.name}`,
+      message: `Temperature: ${reading.reading}°C (Threshold: 5.0°C)\nLocation: ${store.address}\nTime: ${new Date().toLocaleString()}`,
+      temperature: reading.reading,
+      threshold: 5.0,
+      confidence: 90,
+      location: store.address
+    });
+    
+    await this.notificationManager.sendPushNotification(alert);
+    this.state.alerts = this.alertManager.getAlerts();
+  }
+
+  private bindEvents(): void {
+    // Tab navigation
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      
+      if (target.classList.contains('tab-btn') || target.closest('.tab-btn')) {
+        const tabBtn = target.classList.contains('tab-btn') ? target : target.closest('.tab-btn');
+        const tab = tabBtn?.getAttribute('data-tab') as ViewType;
+        if (tab) {
+          this.switchTab(tab);
+        }
+      }
+      
+      // Store selection toggles
+      if (target.classList.contains('store-toggle') || target.closest('.store-toggle')) {
+        const storeToggle = target.classList.contains('store-toggle') ? target : target.closest('.store-toggle');
+        const storeId = storeToggle?.getAttribute('data-store-id');
+        if (storeId) {
+          this.toggleStore(storeId);
+        }
+      }
+      
+      // Alert interactions
+      if (target.classList.contains('alert-item') || target.closest('.alert-item')) {
+        const alertItem = target.classList.contains('alert-item') ? target : target.closest('.alert-item');
+        const alertId = alertItem?.getAttribute('data-alert-id');
+        if (alertId) {
+          this.openAlert(alertId);
+        }
+      }
+    });
+
+    // Network status
+    window.addEventListener('online', () => {
+      this.state.isOnline = true;
+      this.render();
+    });
+
+    window.addEventListener('offline', () => {
+      this.state.isOnline = false;
+      this.render();
+    });
+
+    // Handle URL parameters (deep linking to alerts)
+    const urlParams = new URLSearchParams(window.location.search);
+    const alertId = urlParams.get('alert');
+    if (alertId) {
+      setTimeout(() => this.openAlert(alertId), 1000);
+    }
+  }
+
+  private async switchTab(tab: ViewType): Promise<void> {
+    this.state.currentView = tab;
+    this.render();
+    
+    // Initialize map when switching to map view
+    if (tab === 'map') {
+      setTimeout(async () => {
+        await this.initializeMap();
+      }, 100);
+    }
+  }
+
+  private async toggleStore(storeId: string): Promise<void> {
+    if (this.state.selectedStores.has(storeId)) {
+      this.state.selectedStores.delete(storeId);
+    } else {
+      this.state.selectedStores.add(storeId);
+      
+      // Connect to newly selected store
+      const store = this.stores.find(s => s.id === storeId);
+      if (store) {
+        const connected = await this.connectionManager.connectToStore(store);
+        store.status = connected ? 'online' : 'offline';
+      }
+    }
+    
+    this.saveState();
+    this.render();
+  }
+
+  private openAlert(alertId: string): void {
+    const alert = this.state.alerts.find(a => a.id === alertId);
+    if (alert) {
+      this.alertManager.markAsRead(alertId);
+      this.state.alerts = this.alertManager.getAlerts();
+      this.showAlertDetail(alert);
+      this.render();
+    }
+  }
+
+  private showAlertDetail(alert: Alert): void {
+    const modal = document.createElement('div');
+    modal.className = 'alert-modal';
+    modal.innerHTML = `
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>${alert.title}</h2>
+          <button class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert-severity severity-${alert.severity}">
+            ${alert.severity.toUpperCase()}
+          </div>
+          <div class="alert-time">
+            ${formatRelativeTime(alert.timestamp)}
+          </div>
+          <div class="alert-message">
+            ${alert.message.split('\n').map(line => `<p>${line}</p>`).join('')}
+          </div>
+          ${alert.imageUrl ? `
+            <div class="alert-images">
+              <div class="image-container">
+                <h4>Camera View</h4>
+                <img src="${alert.imageUrl}" alt="Alert image" class="alert-image" />
+              </div>
+            </div>
+          ` : ''}
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary modal-close">Close</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal handlers
+    modal.querySelectorAll('.modal-close, .modal-backdrop').forEach(el => {
+      el.addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+    });
+  }
+
+  private showError(message: string): void {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+      if (document.body.contains(errorDiv)) {
+        document.body.removeChild(errorDiv);
+      }
+    }, 5000);
+  }
+
+  private saveState(): void {
+    try {
+      const stateToSave = {
+        selectedStores: Array.from(this.state.selectedStores),
+        currentView: this.state.currentView
+      };
+      localStorage.setItem('pret-app-state', JSON.stringify(stateToSave));
+    } catch (error) {
+      console.warn('Failed to save state:', error);
+    }
+  }
+
+  private loadState(): void {
+    try {
+      const saved = localStorage.getItem('pret-app-state');
+      if (saved) {
+        const state = JSON.parse(saved);
+        this.state.selectedStores = new Set(state.selectedStores || []);
+        this.state.currentView = state.currentView || 'stores';
+      }
+    } catch (error) {
+      console.warn('Failed to load saved state:', error);
+    }
+  }
+
+  private render(): void {
+    const app = document.getElementById('app');
+    if (!app) return;
+
+    app.innerHTML = `
+      <div class="mobile-container">
+        ${this.renderHeader()}
+        ${this.renderTabNavigation()}
+        ${this.renderContent()}
+      </div>
+    `;
+  }
+
+  private renderHeader(): string {
+    const unreadCount = this.alertManager.getUnreadCount();
+    const onlineStores = this.state.stores.filter(s => s.status === 'online').length;
+    
+    return `
+      <header class="top-nav">
+        <div class="nav-brand">
+          <div class="brand-logo">🥪</div>
+          <span class="brand-text">Pret Monitor</span>
+        </div>
+        <div class="nav-status">
+          <div class="connection-status ${this.state.isOnline ? 'online' : 'offline'}">
+            <span class="status-dot"></span>
+            <span class="status-text">${onlineStores}/${this.state.stores.length} stores</span>
+          </div>
+          ${unreadCount > 0 ? `<div class="alert-badge">${unreadCount}</div>` : ''}
+        </div>
+      </header>
+    `;
+  }
+
+  private renderTabNavigation(): string {
+    const unreadCount = this.alertManager.getUnreadCount();
+    
+    return `
+      <nav class="tab-navigation">
+        <button class="tab-btn ${this.state.currentView === 'stores' ? 'active' : ''}" data-tab="stores">
+          <span class="tab-icon">🏪</span>
+          <span class="tab-label">Stores</span>
+        </button>
+        <button class="tab-btn ${this.state.currentView === 'map' ? 'active' : ''}" data-tab="map">
+          <span class="tab-icon">🗺️</span>
+          <span class="tab-label">Map</span>
+        </button>
+        <button class="tab-btn ${this.state.currentView === 'alerts' ? 'active' : ''}" data-tab="alerts">
+          <span class="tab-icon">🚨</span>
+          <span class="tab-label">Alerts</span>
+          ${unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : ''}
+        </button>
+        <button class="tab-btn ${this.state.currentView === 'camera' ? 'active' : ''}" data-tab="camera">
+          <span class="tab-icon">📹</span>
+          <span class="tab-label">Live Feed</span>
+        </button>
+      </nav>
+    `;
+  }
+
+  private renderContent(): string {
+    switch (this.state.currentView) {
+      case 'stores':
+        return this.renderStoresView();
+      case 'map':
+        return this.renderMapView();
+      case 'alerts':
+        return this.renderAlertsView();
+      case 'camera':
+        return this.renderCameraView();
+      default:
+        return this.renderStoresView();
+    }
+  }
+
+  private renderStoresView(): string {
+    return `
+      <main class="content-area">
+        <div class="stores-header">
+          <h2>Store Locations</h2>
+          <p class="stores-subtitle">Select stores to monitor</p>
+        </div>
+        <div class="stores-list">
+          ${this.state.stores.map(store => this.renderStoreCard(store)).join('')}
+        </div>
+        ${this.state.selectedStores.size > 0 ? `
+          <div class="stores-summary">
+            <h3>Monitoring ${this.state.selectedStores.size} stores</h3>
+            <p class="last-sync">Last updated: ${formatRelativeTime(this.state.lastSync)}</p>
+          </div>
+        ` : ''}
+      </main>
+    `;
+  }
+
+  private renderStoreCard(store: StoreLocation): string {
+    const isSelected = this.state.selectedStores.has(store.id);
+    const storeAlerts = this.state.alerts.filter(a => a.storeId === store.id && !a.read);
+    
+    return `
+      <div class="store-card ${isSelected ? 'selected' : ''}" data-store-id="${store.id}">
+        <div class="store-toggle" data-store-id="${store.id}">
+          <div class="store-info">
+            <div class="store-header">
+              <h3 class="store-name">${store.name}</h3>
+              <div class="store-status status-${store.status}">
+                <span class="status-dot"></span>
+                <span class="status-text">${store.status}</span>
+              </div>
+            </div>
+            <p class="store-address">${store.address}</p>
+            <div class="store-region">${store.region}</div>
+          </div>
+          <div class="store-actions">
+            <div class="toggle-switch ${isSelected ? 'active' : ''}">
+              <div class="toggle-thumb"></div>
+            </div>
+            ${storeAlerts.length > 0 ? `<div class="alert-count">${storeAlerts.length}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private renderMapView(): string {
+    return `
+      <main class="content-area">
+        <div class="map-header">
+          <h2>Store Locations</h2>
+          <p class="map-subtitle">Interactive map view</p>
+        </div>
+        <div id="map-container" class="map-container"></div>
+        <div class="map-legend">
+          <div class="legend-item">
+            <span class="legend-dot online"></span>
+            <span>Online</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot offline"></span>
+            <span>Offline</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot alert"></span>
+            <span>Has Alerts</span>
+          </div>
+        </div>
+      </main>
+    `;
+  }
+
+  private renderAlertsView(): string {
+    const alerts = this.state.alerts.slice(0, 50); // Limit to recent 50
+    
+    return `
+      <main class="content-area">
+        <div class="alerts-header">
+          <h2>Alert History</h2>
+          <div class="alerts-actions">
+            <button class="btn-secondary" onclick="app.alertManager.markAllAsRead(); app.render();">
+              Mark All Read
+            </button>
+          </div>
+        </div>
+        <div class="alerts-list">
+          ${alerts.length > 0 ? alerts.map(alert => this.renderAlertCard(alert)).join('') : 
+            '<div class="no-alerts">No alerts yet. Monitoring is active.</div>'}
+        </div>
+      </main>
+    `;
+  }
+
+  private renderAlertCard(alert: Alert): string {
+    return `
+      <div class="alert-item ${alert.read ? 'read' : 'unread'}" data-alert-id="${alert.id}">
+        <div class="alert-content">
+          <div class="alert-header">
+            <div class="alert-severity severity-${alert.severity}">
+              <span class="severity-dot"></span>
+              ${alert.severity}
+            </div>
+            <div class="alert-time">${formatRelativeTime(alert.timestamp)}</div>
+          </div>
+          <h3 class="alert-title">${alert.title}</h3>
+          <p class="alert-message">${alert.message.split('\n')[0]}</p>
+          <div class="alert-location">${alert.location || alert.storeName}</div>
+        </div>
+        ${alert.imageUrl ? `
+          <div class="alert-image-preview">
+            <img src="${alert.imageUrl}" alt="Alert preview" />
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  private renderCameraView(): string {
+    const selectedStores = Array.from(this.state.selectedStores);
+    
+    if (selectedStores.length === 0) {
+      return `
+        <main class="content-area">
+          <div class="camera-empty">
+            <h2>No Stores Selected</h2>
+            <p>Select stores from the Stores tab to view live camera feeds.</p>
+          </div>
+        </main>
+      `;
+    }
+
+    return `
+      <main class="content-area">
+        <div class="camera-header">
+          <h2>Live Camera Feeds</h2>
+          <p class="camera-subtitle">Real-time view with CV overlays</p>
+        </div>
+        <div class="camera-grid">
+          ${selectedStores.map(storeId => {
+            const store = this.state.stores.find(s => s.id === storeId);
+            return store ? this.renderCameraFeed(store) : '';
+          }).join('')}
+        </div>
+      </main>
+    `;
+  }
+
+  private renderCameraFeed(store: StoreLocation): string {
+    return `
+      <div class="camera-feed">
+        <div class="camera-header">
+          <h3>${store.name}</h3>
+          <div class="camera-status status-${store.status}">
+            <span class="status-dot"></span>
+            ${store.status}
+          </div>
+        </div>
+        <div class="camera-container" id="camera-${store.id}">
+          <div class="camera-loading">Loading camera feed...</div>
+        </div>
+        <div class="camera-info">
+          <span class="camera-location">${store.address}</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// Global app instance
+let app: InventoryMonitorApp;
+
+// Initialize app when DOM is ready
+document.addEventListener('DOMContentLoaded', async () => {
+  app = new InventoryMonitorApp();
+  // @ts-ignore - Make app globally available for debugging
+  window.app = app;
+  await app.initialize();
+});
+
+// Handle service worker messages
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data.type === 'NOTIFICATION_CLICKED') {
+      const { alertId } = event.data;
+      if (alertId && app) {
+        app.openAlert(alertId);
+      }
+    }
+  });
+}
+</content>
+</file>
+<file path="src/monitor/src/map.ts">
+<filename>map.ts</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/src/notifications.ts">
+<filename>notifications.ts</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/src/types.ts">
+<filename>types.ts</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/src/utils.ts">
+<filename>utils.ts</filename>
+<content>
+
+</content>
+</file>
+<file path="src/monitor/src/vite-env.d.ts">
+<filename>vite-env.d.ts</filename>
+<content>
+
+</content>
+</file>
+</combined_files>
